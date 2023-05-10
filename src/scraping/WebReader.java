@@ -12,12 +12,12 @@ public class WebReader {
 
 	static Document getPage(String url) {
 		// this one returns the whole HTML of the page
-		System.out.println("GET: " +url);
+//		System.out.println("GET: " +url);
 		pause(300);
 		try {
 			return Jsoup.connect(url)
 					.data("query", "Java")
-					.userAgent("Mozilla")
+					.userAgent("Mozilla/5.0")
 					.cookie("auth", "token")
 					.timeout(10000)
 					.get();
@@ -25,13 +25,18 @@ public class WebReader {
 		} catch (Exception e) {
 			System.out.println("Error on " +url);
 			e.printStackTrace();
+			return null;
 		}
-		return null;
 	}
 	
 	static JSONArray getRawJSON(String url) {
+//		System.out.println("GET JSON: " +url);
         try {
             Document doc = Jsoup.connect(url)
+            		.data("query", "Java")
+					.userAgent("Mozilla/5.0")
+					.cookie("auth", "token")
+					.timeout(10000)
             		.ignoreContentType(true)
             		.get();
             String jsonString = doc.body().text();

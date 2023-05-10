@@ -1,18 +1,17 @@
-package GUI;
+package garbaj;
 
 import java.util.ArrayList;
 
 import javax.swing.JPanel;
 
-import scraping.Scrape;
+import scraping.Source;
 
 public class Panel extends JPanel {
-	Scrape source;
+	Source source;
 	ArrayList<DataLabel> dataLabels = new ArrayList<DataLabel>();
 	static ArrayList<Panel> all = new ArrayList<Panel>();
 	
-	public Panel(Scrape source) {
-		super();
+	public Panel(Source source) {
 		this.source = source;
 		Panel.all.add(this);
 	}
@@ -21,7 +20,7 @@ public class Panel extends JPanel {
 //		return new DataLabel(name, this);
 //	}
 
-	public void changeSource(Scrape source) {
+	public void changeSource(Source source) {
 		this.source = source;
 	}
 	

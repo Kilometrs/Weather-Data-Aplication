@@ -1,4 +1,4 @@
-package GUI;
+package garbaj;
 
 import java.awt.Color;
 import java.awt.Container;

@@ -1,10 +1,12 @@
-package GUI;
+package garbaj;
 
 import java.util.ArrayList;
 
 import javax.swing.JLabel;
 
-import scraping.Scrape;
+import GUI.GUI;
+import scraping.City;
+import scraping.Source;
 
 public class DataLabel extends JLabel {
 	Panel panel;
@@ -21,8 +23,8 @@ public class DataLabel extends JLabel {
 	
 	public void setLatestData() {
 		// changes the panel source
-		Scrape source = this.panel.source;
-		this.panel.changeSource(Scrape.get(source.getSource(), GUI.getSelectedCity()));
+		Source source = this.panel.source;
+		this.panel.changeSource(Source.get(source.getSource(), GUI.getSelectedCity()));
 		
 		if (this.type.equalsIgnoreCase("current")) {
 			this.setCurrentTemp();
@@ -45,7 +47,7 @@ public class DataLabel extends JLabel {
 	}
 
 	public void setCurrentTemp() {
-		this.setText(panel.source.getCurrentTemp());
+		this.setText(((City)GUI.getSelectedCity()).getCurrentTemp());
 	}
 	
 	public void setFeelsLike() {

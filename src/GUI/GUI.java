@@ -15,25 +15,37 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
 
-import scraping.Scrape;
+import scraping.City;
+import scraping.Source;
 
 public class GUI implements ActionListener {
 	static String root = System.getProperty("user.dir") + "/src/main/";
 	static JFrame mainFrame;
 	static Container mainContainer;
-	static JComboBox<String> mainComboBox;
+	static JComboBox<Source> sourceComboBox;
+	static JComboBox<City> cityComboBox;
 	static JTabbedPane mainTabbedPane;
+	
+	static JLabel crntWthrInfo;
+	static JLabel feelsLikeInfo;
+	static JLabel windInfo;
+	static JLabel humidityInfo;
+	
+	static GUI listener = new GUI();
+	
 	
 //	static Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 //	static int screenWidth = (int) screenSize.getWidth();
 //	static int screenHeight = (int) screenSize.getHeight();
 	
 	static int WIDTH = 500;
-	static int HEIGHT = 320;
+	static int HEIGHT = 365;
 	static int leftAlign = 18;
-	static Rectangle mainComboBoxRec = new Rectangle(leftAlign,15,450,25);
+	static Rectangle sourceComboBoxRec = new Rectangle(leftAlign,15,450,25);
+	static Rectangle cityComboBoxRec = new Rectangle(leftAlign,45,450,25);
+	
 	static Rectangle mainFrameRec = new Rectangle(0, 0, WIDTH, HEIGHT);
-	static Rectangle mainTabPaneRec = new Rectangle(leftAlign, 55, 450, 215);
+	static Rectangle mainTabPaneRec = new Rectangle(leftAlign, 75, 450, 215);
 	
 	
 	public static void createMainFrame() {
@@ -47,12 +59,27 @@ public class GUI implements ActionListener {
 		mainContainer = mainFrame.getContentPane();
 	}
 	
-	public static void createMainComboBox(String[] wordList) {
-		mainComboBox = createComboBox(wordList, mainComboBoxRec);
-		mainContainer.add(mainComboBox);
-		mainComboBox.setVisible(true);
-		mainComboBox.addActionListener(new GUI());
+	public static void createMainComboBoxes() {
+		createSourceComboBox();
+		createCityComboBox();
 		refreshMain();
+	}
+	
+	private static void createSourceComboBox() {
+		sourceComboBox = new JComboBox<Source>(Source.getAvailableSources());
+		sourceComboBox.setBounds(sourceComboBoxRec);
+		sourceComboBox.setVisible(true);
+		sourceComboBox.addActionListener(listener);
+		mainContainer.add(sourceComboBox);
+	}
+	
+	private static void createCityComboBox() {
+		Source selectedSrc = (Source) sourceComboBox.getSelectedItem();
+		cityComboBox = new JComboBox<City>(selectedSrc.getSrcAvailableCities());
+		cityComboBox.setBounds(cityComboBoxRec);
+		cityComboBox.setVisible(true);
+		cityComboBox.addActionListener(listener);
+		mainContainer.add(cityComboBox);
 	}
 	
 	public static void createTabbedPane() {
@@ -64,25 +91,20 @@ public class GUI implements ActionListener {
 		refreshMain();
 	}
 	
-	static String getSelectedCity() {
-		return mainComboBox.getSelectedItem().toString();
+	static City getSelectedCity() {
+		return (City) cityComboBox.getSelectedItem();
 	}
 	
 	private static void addTabsToMainPane() {
-		mainTabbedPane.addTab("AccuWeather", createSitePanel("AccuWeather"));
-		mainTabbedPane.addTab("Gismeteo", createSitePanel("GisMeteo"));
-		mainTabbedPane.addTab("LVĢMC", createSitePanel("LVĢMC"));
+		mainTabbedPane.addTab("Site data", createSitePanel());
 		mainTabbedPane.addTab("Summary", new JPanel());
 		mainTabbedPane.addTab("History", new JPanel());
-
 	}
 	
-	private static JPanel createSitePanel(String sourceName) {
-		Scrape scrape = Scrape.get(sourceName, GUI.getSelectedCity());
-		Panel panel = new Panel(scrape);
+	private static JPanel createSitePanel() {
+		JPanel panel = new JPanel();
 		panel.setLayout(null);
-		
-		addPremadeLabels(panel, scrape);
+		addPremadeLabels(panel);
 
 		//adding table
 		JTable table = new JTable();
@@ -92,40 +114,37 @@ public class GUI implements ActionListener {
 		return panel;
 	}
 	
-	private static void addPremadeLabels(Panel panel, Scrape scrape) {
+	private static void addPremadeLabels(JPanel panel) {
 		int leftPadding = 10;
-		JLabel crntWthrLbl = new JLabel("CURRENT PANEL");
+		JLabel crntWthrLbl = new JLabel("CURRENT WEATHER (°C)");
 		centerAlignJLabel(crntWthrLbl);
 		crntWthrLbl.setBounds(leftPadding,10,150,20);
 		
-		DataLabel crntWthrInfo = new DataLabel("e", panel, "current");
+		crntWthrInfo = new JLabel("...");
 		centerAlignJLabel(crntWthrInfo);
 		crntWthrInfo.setBounds(leftPadding, 35, 150, 70);
 		crntWthrInfo.setFont(new Font(null, Font.PLAIN, 70));
-		crntWthrInfo.setText(scrape.getCurrentTemp());
 		
-		JLabel feelsLikeLbl = new JLabel("FEELS LIKE");
+		JLabel feelsLikeLbl = new JLabel("FEELS LIKE (C°)");
 		feelsLikeLbl.setBounds(leftPadding, 110, 120, 20);
 		
-		DataLabel feelsLikeInfo = new DataLabel("e", panel, "feels");
+		feelsLikeInfo = new JLabel("...");
+		centerAlignJLabel(feelsLikeInfo);
 		feelsLikeInfo.setBounds(leftPadding+120, 110, 30, 20);
-		feelsLikeInfo.setText(scrape.getFeelsLike());
 		
 		JLabel windLbl = new JLabel("WIND");
 		windLbl.setBounds(leftPadding, 135, 70, 20);
 		
-		DataLabel windInfo =  new DataLabel("e", panel, "wind");
+		windInfo =  new JLabel("...");
 		centerAlignJLabel(windInfo);
 		windInfo.setBounds(leftPadding+70, 135, 80, 20);
-		windInfo.setText(scrape.getWindSpeed());
 		
 		JLabel humLbl = new JLabel("HUMIDITY");
 		humLbl.setBounds(leftPadding, 160, 120, 20);
 		
-		DataLabel humInfo =  new DataLabel("e", panel, "humidity");
-		centerAlignJLabel(humInfo);
-		humInfo.setBounds(leftPadding+120, 160, 30, 20);
-		humInfo.setText(scrape.getHumidity());
+		humidityInfo = new JLabel("...");
+		centerAlignJLabel(humidityInfo);
+		humidityInfo.setBounds(leftPadding+120, 160, 30, 20);
 		
 		
 		panel.add(crntWthrLbl);
@@ -135,7 +154,7 @@ public class GUI implements ActionListener {
 		panel.add(windInfo);
 		panel.add(windLbl);
 		panel.add(humLbl);
-		panel.add(humInfo);
+		panel.add(humidityInfo);
 		
 		// debug
 		crntWthrLbl.setBackground(Color.pink);
@@ -155,8 +174,8 @@ public class GUI implements ActionListener {
 		
 		humLbl.setBackground(Color.lightGray);
 		humLbl.setOpaque(true);
-		humInfo.setBackground(Color.pink);
-		humInfo.setOpaque(true);
+		humidityInfo.setBackground(Color.pink);
+		humidityInfo.setOpaque(true);
 		
 	}
 	
@@ -169,23 +188,37 @@ public class GUI implements ActionListener {
 	    label.setVerticalAlignment(SwingConstants.CENTER);
 	}
 	
-	private static JComboBox<String> createComboBox(String[] wordList, Rectangle rec) {
-		JComboBox<String> comboBox = new JComboBox<String>(wordList);
-		comboBox.setBounds(rec);
-		return comboBox;
-	}
+//	private static JComboBox<String> createComboBox(String[] wordList, Rectangle rec) {
+//		JComboBox<String> comboBox = new JComboBox<String>(wordList);
+//		comboBox.setBounds(rec);
+//		return comboBox;
+//	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		try {
 			if (e.getSource() instanceof JComboBox) {
 				JComboBox comboBoxSource = (JComboBox) e.getSource();
-				if (comboBoxSource == mainComboBox) Panel.refreshData();
+				if (comboBoxSource == cityComboBox) GUI.updateInfoLabels();
+				if (comboBoxSource == sourceComboBox) GUI.recreateCityComboBox();;
 			}
 		} catch (Exception e2) {
 			// TODO: handle exception
 		}
 	}
 	
+	private static void updateInfoLabels() {
+		City selectedCity = GUI.getSelectedCity();
+		crntWthrInfo.setText(selectedCity.getCurrentTemp());
+		feelsLikeInfo.setText(selectedCity.getFeelsLike());
+		windInfo.setText(selectedCity.getWindSpeed());
+		humidityInfo.setText(selectedCity.getHumidity());
+	}
+	
+	private static void recreateCityComboBox() {
+		mainContainer.remove(cityComboBox);
+		createCityComboBox();
+		refreshMain();
+	}
 	
 }
