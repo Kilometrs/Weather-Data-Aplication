@@ -47,7 +47,7 @@ public class DataLabel extends JLabel {
 	}
 
 	public void setCurrentTemp() {
-		this.setText(((City)GUI.getSelectedCity()).getCurrentTemp());
+		this.setText(((City)GUI.getSelectedCity()).getCrntTemp());
 	}
 	
 	public void setFeelsLike() {

@@ -1,16 +1,17 @@
 package main;
 
+import java.util.regex.Pattern;
+
 import GUI.GUI;
 import scraping.Source;
 
 public class Main {
-	static String[] cityArray = {"Valmiera", "Rīga", "Daugavpils", "Liepāja"};
+	static boolean isDebugging = true;
 	public static void main(String[] args) {
 		Main.createScrapeObjects();
 		GUI.createMainFrame();
 		GUI.createMainComboBoxes();
 		GUI.createTabbedPane();
-		System.out.println(Source.all.size());
 	}
 	
 	public static void createScrapeObjects() {
@@ -30,5 +31,17 @@ public class Main {
 		Source.getAccuScrape("Daugavpils", "https://www.accuweather.com/en/lv/daugavpils/227465/current-weather/227465");
 		Source.getGisMeteoScrape("Daugavpils", "https://www.gismeteo.lv/weather-daugavpils-4177/now/");
 		Source.getLVGMCScrape("Daugavpils", "https://videscentrs.lvgmc.lv/data/weather_forecast_for_location_hourly?punkts=P75");
+	}
+	
+	public static int getInt(String string) {
+		Pattern regex = Pattern.compile("[-+]?\\d+[.]?\\d*");
+		try {
+			System.out.println(regex.matcher(string).group());
+			return Integer.parseInt(regex.matcher(string).toString());
+		} catch (Exception e) {
+			System.out.println(e);
+			System.out.println("String error at "+string);
+			return 0;
+		}
 	}
 }

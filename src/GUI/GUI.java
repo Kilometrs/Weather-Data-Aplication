@@ -31,8 +31,15 @@ public class GUI implements ActionListener {
 	static JLabel windInfo;
 	static JLabel humidityInfo;
 	
+	static JLabel avgWthrInfo;
+	static JLabel avgFeelsLikeInfo;
+	static JLabel avgWindInfo;
+	static JLabel avgHumidityInfo;
+	
 	static GUI listener = new GUI();
 	
+	static Font sumInfoFont = new Font(null, Font.CENTER_BASELINE, 42);
+	static Font siteInfoFont = new Font(null, Font.CENTER_BASELINE, 12);
 	
 //	static Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 //	static int screenWidth = (int) screenSize.getWidth();
@@ -40,12 +47,15 @@ public class GUI implements ActionListener {
 	
 	static int WIDTH = 500;
 	static int HEIGHT = 365;
-	static int leftAlign = 18;
-	static Rectangle sourceComboBoxRec = new Rectangle(leftAlign,15,450,25);
-	static Rectangle cityComboBoxRec = new Rectangle(leftAlign,45,450,25);
+	static int mainLeftAlign = 18;
+	static Rectangle sourceComboBoxRec = new Rectangle(mainLeftAlign,15,450,25);
+	static Rectangle cityComboBoxRec = new Rectangle(mainLeftAlign,45,450,25);
 	
 	static Rectangle mainFrameRec = new Rectangle(0, 0, WIDTH, HEIGHT);
-	static Rectangle mainTabPaneRec = new Rectangle(leftAlign, 75, 450, 215);
+	static Rectangle mainTabPaneRec = new Rectangle(mainLeftAlign, 75, 450, 215);
+	
+	static boolean isVisualDebug = true; 
+	// PINK ones are dynamic, GREY ones ain't
 	
 	
 	public static void createMainFrame() {
@@ -97,14 +107,14 @@ public class GUI implements ActionListener {
 	
 	private static void addTabsToMainPane() {
 		mainTabbedPane.addTab("Site data", createSitePanel());
-		mainTabbedPane.addTab("Summary", new JPanel());
+		mainTabbedPane.addTab("Summary", createSummaryPanel());
 		mainTabbedPane.addTab("History", new JPanel());
 	}
 	
 	private static JPanel createSitePanel() {
 		JPanel panel = new JPanel();
 		panel.setLayout(null);
-		addPremadeLabels(panel);
+		createSiteLbls(panel);
 
 		//adding table
 		JTable table = new JTable();
@@ -114,69 +124,61 @@ public class GUI implements ActionListener {
 		return panel;
 	}
 	
-	private static void addPremadeLabels(JPanel panel) {
+	private static void createSiteLbls(JPanel panel) {
 		int leftPadding = 10;
-		JLabel crntWthrLbl = new JLabel("CURRENT WEATHER (°C)");
-		centerAlignJLabel(crntWthrLbl);
-		crntWthrLbl.setBounds(leftPadding,10,150,20);
+		createLbl("CURRENT WEATHER (°C)", true, leftPadding, 10, 150, 20, panel, null);
+		createLbl("FEELS LIKE (C°)", false, 	leftPadding, 110, 120, 20, panel, null);
+		createLbl("WIND", false, 				leftPadding, 135, 70, 20, panel, null);
+		createLbl("HUMIDITY", false, 			leftPadding, 160, 120, 20, panel, null);
+
+		crntWthrInfo = createLbl("...",true, 	leftPadding, 35, 150, 70, panel, new Font(null, Font.PLAIN, 60));
+		feelsLikeInfo = createLbl("...",true, 	leftPadding+120, 110, 30, 20, panel, siteInfoFont);
+		windInfo = createLbl("...",true, 		leftPadding+70, 135, 80, 20, panel, siteInfoFont);
+		humidityInfo = createLbl("...",true, 	leftPadding+120, 160, 30, 20, panel, siteInfoFont);
+	}
+	
+	private static JPanel createSummaryPanel() {
+		JPanel panel = new JPanel();
+		panel.setLayout(null);
+		createSummaryLbls(panel);
+		return panel;
+	}
+	
+	private static void createSummaryLbls(JPanel panel) {
+		createLbl("AVERAGE WEATHER DATA FOR ...", true, 10, 5, 425, 20, panel, null);
+		int wdth = 210;
+		int cl1 = 10;
+		int infoH = 48;
+		// I know, eye cancer!
+		createLbl("AVERAGE CURRENT", true, 	cl1, 30, wdth, 20, panel, null);
+		avgWthrInfo = createLbl("...",true, 	cl1, 55, wdth, infoH, panel, sumInfoFont);
 		
-		crntWthrInfo = new JLabel("...");
-		centerAlignJLabel(crntWthrInfo);
-		crntWthrInfo.setBounds(leftPadding, 35, 150, 70);
-		crntWthrInfo.setFont(new Font(null, Font.PLAIN, 70));
+		createLbl("AVERAGE WIND", true, cl1, 55+5+infoH, wdth, 20, panel, null);
+		avgWindInfo = createLbl("...",true, 	cl1, 55+5+25+infoH, wdth, infoH, panel, sumInfoFont);
 		
-		JLabel feelsLikeLbl = new JLabel("FEELS LIKE (C°)");
-		feelsLikeLbl.setBounds(leftPadding, 110, 120, 20);
+		int cl2 = cl1 + wdth + 5;
+		createLbl("AVERAGE FEEL", true, cl2, 30, wdth, 20, panel, null);
+		avgFeelsLikeInfo = createLbl("...",true, cl2, 55, wdth, infoH, panel, sumInfoFont);
 		
-		feelsLikeInfo = new JLabel("...");
-		centerAlignJLabel(feelsLikeInfo);
-		feelsLikeInfo.setBounds(leftPadding+120, 110, 30, 20);
+		createLbl("AVERAGE HUMIDITY", true, cl2, 55+5+infoH, wdth, 20, panel, null);
+		avgWindInfo = createLbl("...",true, 	cl2, 55+5+25+infoH, wdth, infoH, panel, sumInfoFont);
 		
-		JLabel windLbl = new JLabel("WIND");
-		windLbl.setBounds(leftPadding, 135, 70, 20);
-		
-		windInfo =  new JLabel("...");
-		centerAlignJLabel(windInfo);
-		windInfo.setBounds(leftPadding+70, 135, 80, 20);
-		
-		JLabel humLbl = new JLabel("HUMIDITY");
-		humLbl.setBounds(leftPadding, 160, 120, 20);
-		
-		humidityInfo = new JLabel("...");
-		centerAlignJLabel(humidityInfo);
-		humidityInfo.setBounds(leftPadding+120, 160, 30, 20);
-		
-		
-		panel.add(crntWthrLbl);
-		panel.add(crntWthrInfo);
-		panel.add(feelsLikeLbl);
-		panel.add(feelsLikeInfo);
-		panel.add(windInfo);
-		panel.add(windLbl);
-		panel.add(humLbl);
-		panel.add(humidityInfo);
-		
-		// debug
-		crntWthrLbl.setBackground(Color.pink);
-		crntWthrLbl.setOpaque(true);
-		crntWthrInfo.setBackground(Color.lightGray);
-		crntWthrInfo.setOpaque(true);
-		
-		feelsLikeLbl.setBackground(Color.lightGray);
-		feelsLikeLbl.setOpaque(true);
-		feelsLikeInfo.setBackground(Color.pink);
-		feelsLikeInfo.setOpaque(true);
-		
-		windLbl.setBackground(Color.pink);
-		windLbl.setOpaque(true);
-		windInfo.setBackground(Color.lightGray);
-		windInfo.setOpaque(true);
-		
-		humLbl.setBackground(Color.lightGray);
-		humLbl.setOpaque(true);
-		humidityInfo.setBackground(Color.pink);
-		humidityInfo.setOpaque(true);
-		
+	}
+
+	private static JLabel createLbl(String txt,boolean isCentered,
+										int x, int y, int w, int h, 
+										JPanel panel, Font font) {
+		JLabel lbl = new JLabel(txt.toUpperCase());
+		if (isCentered) centerAlignJLabel(lbl);
+		lbl.setBounds(x,y,w,h);
+		panel.add(lbl);
+		if (font != null) lbl.setFont(font);
+		if (isVisualDebug) {
+			lbl.setBackground(Color.lightGray);
+			if (font != null) lbl.setBackground(Color.pink);
+			lbl.setOpaque(true);
+		}
+		return lbl;
 	}
 	
 	private static void refreshMain() {
@@ -188,12 +190,6 @@ public class GUI implements ActionListener {
 	    label.setVerticalAlignment(SwingConstants.CENTER);
 	}
 	
-//	private static JComboBox<String> createComboBox(String[] wordList, Rectangle rec) {
-//		JComboBox<String> comboBox = new JComboBox<String>(wordList);
-//		comboBox.setBounds(rec);
-//		return comboBox;
-//	}
-
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		try {
@@ -209,10 +205,15 @@ public class GUI implements ActionListener {
 	
 	private static void updateInfoLabels() {
 		City selectedCity = GUI.getSelectedCity();
-		crntWthrInfo.setText(selectedCity.getCurrentTemp());
+		crntWthrInfo.setText(selectedCity.getCrntTemp());
 		feelsLikeInfo.setText(selectedCity.getFeelsLike());
 		windInfo.setText(selectedCity.getWindSpeed());
 		humidityInfo.setText(selectedCity.getHumidity());
+		
+		avgWthrInfo.setText(selectedCity.getAverageCrntTemp());
+		avgFeelsLikeInfo.setText(selectedCity.getAverageFeelsLike());
+		avgWindInfo.setText(selectedCity.getAverageWindSpeed());
+		avgHumidityInfo.setText(selectedCity.getAverageHumidity());
 	}
 	
 	private static void recreateCityComboBox() {
