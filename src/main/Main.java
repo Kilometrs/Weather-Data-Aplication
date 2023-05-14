@@ -1,21 +1,23 @@
 package main;
 
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import GUI.GUI;
+import scraping.City;
 import scraping.Source;
 
 public class Main {
 	static boolean isDebugging = true;
 	public static void main(String[] args) {
 		Main.createScrapeObjects();
+		City.calculateAverageValues();
 		GUI.createMainFrame();
 		GUI.createMainComboBoxes();
 		GUI.createTabbedPane();
 	}
 	
 	public static void createScrapeObjects() {
-		// FOR THE LOVE OF JESUS, CREATE THREADS!!!
 		Source.getAccuScrape("Valmiera","https://www.accuweather.com/en/lv/valmiera/226476/current-weather/226476");
 		Source.getGisMeteoScrape("Valmiera", "https://www.gismeteo.lv/weather-valmiera-4101/now/");
 		Source.getLVGMCScrape("Valmiera", "https://videscentrs.lvgmc.lv/data/weather_forecast_for_location_hourly?punkts=P11");
@@ -33,15 +35,49 @@ public class Main {
 		Source.getLVGMCScrape("Daugavpils", "https://videscentrs.lvgmc.lv/data/weather_forecast_for_location_hourly?punkts=P75");
 	}
 	
-	public static int getInt(String string) {
-		Pattern regex = Pattern.compile("[-+]?\\d+[.]?\\d*");
-		try {
-			System.out.println(regex.matcher(string).group());
-			return Integer.parseInt(regex.matcher(string).toString());
-		} catch (Exception e) {
-			System.out.println(e);
-			System.out.println("String error at "+string);
-			return 0;
-		}
+	public static int getInt(String input) {
+	    Pattern doublePattern = Pattern.compile("([-+]?\\d+[.]\\d+)");
+	    Matcher matcher = doublePattern.matcher(input);
+	    if (matcher.find()) {
+	        String doubleMatch = matcher.group(1);
+	        try {
+	            double result = Double.parseDouble(doubleMatch);
+	            return (int) Math.round(result);
+	        } catch (NumberFormatException e) {
+	            System.out.println("Could not parse double value: " + doubleMatch);
+	        }
+	    }
+	    Pattern intPattern = Pattern.compile("([-+]?\\d+)");
+	    matcher = intPattern.matcher(input);
+	    if (matcher.find()) {
+	        String intMatch = matcher.group(1);
+	        try {
+	            return Integer.parseInt(intMatch);
+	        } catch (NumberFormatException e) {
+	            System.out.println("Could not parse int value: " + intMatch);
+	        }
+	    }
+	    System.out.println("No match found in input: " + input);
+	    return 0;
+	}
+	
+	public static double roundTo2Decimals(double value) {
+		return Math.round(value * 10.0) / 10.0;
+	}
+	
+	public static int getInt(double value) {
+		return (int) Math.round(value);
+	}
+	
+	public static String getFormatTemp(int temp) {
+		return temp+"°";
+	}
+	
+	public static String getFormatWind(String direction, double speed) {
+		return direction+" "+speed+" m/s";
+	}
+	
+	public static String getFormatPercent(int perc) {
+		return perc+"%";
 	}
 }

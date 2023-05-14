@@ -15,7 +15,9 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
 
+import main.Main;
 import scraping.City;
+import scraping.Scrape;
 import scraping.Source;
 
 public class GUI implements ActionListener {
@@ -31,6 +33,7 @@ public class GUI implements ActionListener {
 	static JLabel windInfo;
 	static JLabel humidityInfo;
 	
+	static JLabel avgMainInfo;
 	static JLabel avgWthrInfo;
 	static JLabel avgFeelsLikeInfo;
 	static JLabel avgWindInfo;
@@ -38,7 +41,7 @@ public class GUI implements ActionListener {
 	
 	static GUI listener = new GUI();
 	
-	static Font sumInfoFont = new Font(null, Font.CENTER_BASELINE, 42);
+	static Font sumInfoFont = new Font(null, Font.PLAIN, 32);
 	static Font siteInfoFont = new Font(null, Font.CENTER_BASELINE, 12);
 	
 //	static Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -105,6 +108,10 @@ public class GUI implements ActionListener {
 		return (City) cityComboBox.getSelectedItem();
 	}
 	
+	static Source getSelectedSource() {
+		return (Source) sourceComboBox.getSelectedItem();
+	}
+	
 	private static void addTabsToMainPane() {
 		mainTabbedPane.addTab("Site data", createSitePanel());
 		mainTabbedPane.addTab("Summary", createSummaryPanel());
@@ -145,7 +152,7 @@ public class GUI implements ActionListener {
 	}
 	
 	private static void createSummaryLbls(JPanel panel) {
-		createLbl("AVERAGE WEATHER DATA FOR ...", true, 10, 5, 425, 20, panel, null);
+		avgMainInfo = createLbl("AVERAGE WEATHER DATA FOR ...", true, 10, 5, 425, 20, panel, null);
 		int wdth = 210;
 		int cl1 = 10;
 		int infoH = 48;
@@ -161,7 +168,7 @@ public class GUI implements ActionListener {
 		avgFeelsLikeInfo = createLbl("...",true, cl2, 55, wdth, infoH, panel, sumInfoFont);
 		
 		createLbl("AVERAGE HUMIDITY", true, cl2, 55+5+infoH, wdth, 20, panel, null);
-		avgWindInfo = createLbl("...",true, 	cl2, 55+5+25+infoH, wdth, infoH, panel, sumInfoFont);
+		avgHumidityInfo = createLbl("...",true, 	cl2, 55+5+25+infoH, wdth, infoH, panel, sumInfoFont);
 		
 	}
 
@@ -204,16 +211,21 @@ public class GUI implements ActionListener {
 	}
 	
 	private static void updateInfoLabels() {
+		Source selectedSource = GUI.getSelectedSource();
 		City selectedCity = GUI.getSelectedCity();
-		crntWthrInfo.setText(selectedCity.getCrntTemp());
-		feelsLikeInfo.setText(selectedCity.getFeelsLike());
-		windInfo.setText(selectedCity.getWindSpeed());
-		humidityInfo.setText(selectedCity.getHumidity());
+		Scrape data = Scrape.getBy(selectedSource, selectedCity);
 		
-		avgWthrInfo.setText(selectedCity.getAverageCrntTemp());
-		avgFeelsLikeInfo.setText(selectedCity.getAverageFeelsLike());
-		avgWindInfo.setText(selectedCity.getAverageWindSpeed());
-		avgHumidityInfo.setText(selectedCity.getAverageHumidity());
+		crntWthrInfo.setText	(Main.getFormatTemp(data.getCrntTemp()));
+		feelsLikeInfo.setText	(Main.getFormatTemp(data.getFeelsLike()));
+		windInfo.setText		(Main.getFormatWind(data.getWindDir(), data.getWindSpeed()));
+		humidityInfo.setText	(Main.getFormatPercent(data.getHumidity()));
+		
+		avgMainInfo.setText		("Average weather data for "+selectedCity.getName().toUpperCase());
+		avgWthrInfo.setText		(Main.getFormatTemp(selectedCity.getAvgCurrentTemp()));
+		avgFeelsLikeInfo.setText(Main.getFormatTemp(selectedCity.getAvgFeelsLike()));
+		avgWindInfo.setText		(Main.getFormatWind(selectedCity.getAvgWindDir(), selectedCity.getAvgWindSpeed()));
+		avgHumidityInfo.setText	(Main.getFormatPercent(selectedCity.getAvgHumidity()));
+		refreshMain();
 	}
 	
 	private static void recreateCityComboBox() {

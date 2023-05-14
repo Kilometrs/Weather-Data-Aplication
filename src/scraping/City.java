@@ -1,100 +1,115 @@
 package scraping;
 
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import main.Main;
 
 public class City {
 	// +"°"
-	Source source;
-	String name;
-	int currentTemp;
-	int feelsLike;
-	String windDir;
-	double windSpeed;
-	int humidity;
+	private String name;
+	private ArrayList<Scrape> scrapes = new ArrayList<Scrape>();
+	
+	private int avgCurrentTemp;
+	private int avgFeelsLike;
+	private String avgWindDir;
+	private double avgWindSpeed;
+	private int avgHumidity;
+	
 	static private ArrayList<City> all = new ArrayList<City>();
 	
-	public City(Source source, String name, int currentTemp,
-			int feelsLike, String windDir, double windSpeed, int humidity) {
-		this.source = source;
+	public City(String name) {
 		this.name = name;
-		this.currentTemp = currentTemp;
-		this.feelsLike = feelsLike;
-		this.windDir = windDir;
-		this.windSpeed = windSpeed;
-		this.humidity = humidity;
 		City.all.add(this);
-		System.out.println("<DEBUG> Source "+this.source+" now has weather data about "+this.name);
 	}
 	
-	public String getAverageCrntTemp() {
-		try {
-			return City.all.stream()
-			.filter(city -> city.name.equalsIgnoreCase(this.name))
-			.mapToInt(city -> Integer.parseInt(city.getCrntTemp()))
-			.average()
-			.toString();
-		} catch (Exception e) {
-			System.out.println(e);
-			return "<e5>";
+	public String getName() {
+		return this.name;
+	}
+	
+	public static City getByName(String name) {
+		return City.all.stream()
+						.filter(source -> source.name.equalsIgnoreCase(name))
+						.findFirst()
+						.orElse(null);
+	}
+	
+	public void addScrape(Scrape scrape) {
+		this.scrapes.add(scrape);
+	}
+	
+	public static void calculateAverageValues() {
+		for (City c : City.all) {
+			System.out.println(c);
+			System.out.println(c.scrapes);
+			c.avgCurrentTemp = c.getCalculatedAverageTemp();
+			c.avgFeelsLike = c.getCalculatedAverageFeelsLike();
+			c.avgWindDir = c.getCalculatedAverageWindDir();
+			c.avgWindSpeed = c.getCalculatedAverageWindSpeed();
+			c.avgHumidity = c.getCalculatedAverageHumidity();
 		}
-		
 	}
 	
-	public final String getCrntTemp() {
-		return currentTemp+" °";
+	private int getCalculatedAverageTemp() {
+		double result = this.scrapes.stream()
+							.mapToInt(scrape -> scrape.getCrntTemp())
+							.average()
+							.orElse(0.0);
+		return Main.getInt(result);
 	}
 	
-	public String getAverageFeelsLike() {
-		try {
-			return City.all.stream()
-			.filter(city -> city.name.equalsIgnoreCase(this.name))
-			.mapToInt(city -> Integer.parseInt(city.getFeelsLike()))
-			.average()
-			.toString();
-		} catch (Exception e) {
-			System.out.println(e);
-			return "<e5>";
-		}
-		
+	private int getCalculatedAverageFeelsLike() {
+		double result = this.scrapes.stream()
+							.mapToInt(scrape -> scrape.getFeelsLike())
+							.average()
+							.orElse(0.0);
+		return Main.getInt(result);
+	}
+	
+	private String getCalculatedAverageWindDir() {
+		return this.scrapes.stream()
+							.collect(Collectors.groupingBy(Scrape::getWindDir, Collectors.counting()))
+							.entrySet().stream()
+							.max(Map.Entry.comparingByValue())
+							.map(Map.Entry::getKey)
+							.get();
+	}
+	
+	private double getCalculatedAverageWindSpeed() {
+		double result = this.scrapes.stream()
+							.mapToDouble(scrape -> scrape.getWindSpeed())
+							.average()
+							.orElse(0.0);
+		return Main.roundTo2Decimals(result);
+	}
+	
+	private int getCalculatedAverageHumidity() {
+		double result = this.scrapes.stream()
+							.mapToInt(scrape -> scrape.getHumidity())
+							.average()
+							.orElse(0.0);
+		return Main.getInt(result);
+	}
+	
+	public int getAvgCurrentTemp() {
+		return avgCurrentTemp;
 	}
 
-	public final String getFeelsLike() {
-		return feelsLike+" °";
-	}
-	
-	public String getAverageWindSpeed() {
-		try {
-			return City.all.stream()
-			.filter(city -> city.name.equalsIgnoreCase(this.name))
-			.mapToInt(city -> Integer.parseInt(city.getWindSpeed()))
-			.average()
-			.toString();
-		} catch (Exception e) {
-			System.out.println(e);
-			return "<e5>";
-		}
-		
+	public int getAvgFeelsLike() {
+		return avgFeelsLike;
 	}
 
-	public final String getWindSpeed() {
-		return windDir+" "+windSpeed+" m/s";
-	}
-	
-	public String getAverageHumidity() {
-		try {
-			return City.all.stream()
-			.filter(city -> city.name.equalsIgnoreCase(this.name))
-			.mapToInt(city -> Integer.parseInt(city.getHumidity()))
-			.average()
-			.toString();
-		} catch (Exception e) {
-			System.out.println(e);
-			return "<e5>";
-		}
+	public String getAvgWindDir() {
+		return avgWindDir;
 	}
 
-	public final String getHumidity() {
-		return humidity+"%";
+	public double getAvgWindSpeed() {
+		return avgWindSpeed;
+	}
+
+	public int getAvgHumidity() {
+		return avgHumidity;
 	}
 
 	@Override

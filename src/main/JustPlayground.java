@@ -39,7 +39,7 @@ public class JustPlayground {
 	        try {
 	            return Integer.parseInt(intMatch);
 	        } catch (NumberFormatException e) {
-	            System.out.println("Could not parse integer value: " + intMatch);
+	            System.out.println("Could not parse int value: " + intMatch);
 	        }
 	    }
 	    System.out.println("No match found in input: " + input);

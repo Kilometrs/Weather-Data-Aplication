@@ -15,17 +15,23 @@ import main.Main;
 
 
 public class Source {
-	String name;
+	private String name;
+	ArrayList<Scrape> scrapes = new ArrayList<Scrape>();
 	ArrayList<City> cities = new ArrayList<City>();
 
 	public static ArrayList<Source> all = new ArrayList<Source>();
 	static boolean isDebugging = true;
 	
-	public static Source create(String name, String city, int currentTemp,
+	public static Source create(String name, String cityName, int currentTemp,
 								int feelsLike, String windDir, double windSpeed, int humidity) {
+		System.out.println(name+";"+cityName+";"+currentTemp+";"+feelsLike+";"+windDir+";"+windSpeed+";"+humidity+";");
 		Source source = getByName(name);
 		if (source == null) source = new Source(name);
-		source.cities.add(new City(source, city, currentTemp, feelsLike, windDir, windSpeed, humidity));
+		City city = City.getByName(cityName);
+		if (city == null) city = new City(cityName);
+		Scrape newScrape = new Scrape(source, city, currentTemp, feelsLike, windDir, windSpeed, humidity);
+		source.scrapes.add(newScrape);
+		source.cities.add(city);
 		return source;
 	}
 	
@@ -35,9 +41,8 @@ public class Source {
 		if (isDebugging) System.out.println("<DEBUG> Created new Source called "+this.name);
 	}
 	
-	private static Boolean alreadyExists(String name) {
-		return Source.all.stream()
-						 .anyMatch(source -> source.name.equals(name));
+	public String getName() {
+		return this.name;
 	}
 	
 	private static Source getByName(String name) {
@@ -68,10 +73,10 @@ public class Source {
 		int currTmp = Main.getInt(html.getElementsByClass("display-temp").text());
 		String[] lineSplit = html.getElementsByClass("detail-item spaced-content").text().split(" ");
 		int feelsLike = Main.getInt(lineSplit[2]);
-		//round this fart!!!! I did
 		String windDir = lineSplit[12];
 		double wind = getAsMPS(lineSplit[13]);
 		int humidity = Main.getInt(lineSplit[20]);
+
 		return create("AccuWeather", city, currTmp, feelsLike, windDir, wind, humidity);
 	}
 
@@ -95,10 +100,10 @@ public class Source {
 		int i = getCrntPrognosisPos(jsonArray);
 //		if (isDebugging) System.out.println("<DEBUG> Time fetched:"+jsonArray.getJSONObject(i).get("laiks").toString());
 		int currTmp  = (int) Math.round(jsonArray.getJSONObject(i).getDouble("temperatura"));
-		int feelsLike = jsonArray.getJSONObject(i).getInt("sajutu_temperatura");
+		int feelsLike = Main.getInt(jsonArray.getJSONObject(i).get("sajutu_temperatura").toString());
 		String windDir = getCardinalDirAbr(jsonArray.getJSONObject(i).getDouble("veja_virziens"));
-		int wind = jsonArray.getJSONObject(i).getInt("veja_atrums");
-		int humidity = jsonArray.getJSONObject(i).getInt("relativais_mitrums");
+		int wind = Main.getInt(jsonArray.getJSONObject(i).get("veja_atrums").toString());
+		int humidity = Main.getInt(jsonArray.getJSONObject(i).get("relativais_mitrums").toString());
 		return create("LVĢMC", city, currTmp, feelsLike, windDir, wind, humidity);
 	}
 	
@@ -116,7 +121,6 @@ public class Source {
 	}
 
 	private static String getCardinalDirAbr(double deg) {
-		// this originally consisted of ~50 lines...
 		if (isDebugging) System.out.println("<DEBUG> Degrees: "+deg);
 		String[] abrs = {"N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"};
 		int res = (int) Math.floor((deg / 22.5) + 0.5);
@@ -153,6 +157,13 @@ public class Source {
 			return 0;
 		}
 		return Math.round((parsed * 0.277778) * 10.0) / 10.0;
+	}
+	
+	public static void printAllDataDebug() {
+		Source.all.stream()
+				  .forEach(str -> {
+					  System.out.println(str+" has "+str.cities);
+				  });
 	}
 	
 	@Override
