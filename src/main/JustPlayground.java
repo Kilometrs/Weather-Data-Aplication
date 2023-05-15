@@ -2,11 +2,14 @@ package main;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
+import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+
 public class JustPlayground {
 
+	public static DB db = new DB();
 	public static void main(String[] args) {
 //		int[] ligma = {1,2,3};
 //		printArray(ligma);
@@ -17,7 +20,13 @@ public class JustPlayground {
 //		getHHMM();
 //		getHHMM2();
 		
-		System.out.println(getInt("+12°C"));
+//		System.out.println(getInt("+12°C"));
+//		db.insert("INSERT IGNORE INTO  `sources` (name) VALUES ('TestWEther');");
+//		HashSet<String> t = db.getExistingSources();
+		String[][] shit = db.getSavedHistory("AccuWeather", "Valmiera");
+		for (String[] strings : shit) {
+			Main.printArray(strings);
+		}
 	}
 	
 	public static int getInt(String input) {

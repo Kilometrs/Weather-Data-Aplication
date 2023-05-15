@@ -7,14 +7,14 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 
-public class DB {
+public class DBd {
 	private Connection con;
 	private Statement stmt;
 	private PreparedStatement ps;
 	private ResultSet rs;
 	private String db = "test";
 	
-	public DB() {
+	public DBd() {
 		try {
 			String params = "?useSSL=false&autoReconnect=true&allowMultiQueries=true";
 			this.con = DriverManager.getConnection("jdbc:mysql://localhost:3306/"+db+params, "root", "root");

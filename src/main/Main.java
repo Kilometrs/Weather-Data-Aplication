@@ -5,13 +5,18 @@ import java.util.regex.Pattern;
 
 import GUI.GUI;
 import scraping.City;
+import scraping.Scrape;
 import scraping.Source;
 
 public class Main {
+	public static DB db = new DB();
 	static boolean isDebugging = true;
 	public static void main(String[] args) {
+		System.out.println("BINHDS");
 		Main.createScrapeObjects();
 		City.calculateAverageValues();
+		Main.saveDataToDB();
+		Main.fillAllHistories();
 		GUI.createMainFrame();
 		GUI.createMainComboBoxes();
 		GUI.createTabbedPane();
@@ -35,6 +40,15 @@ public class Main {
 		Source.getLVGMCScrape("Daugavpils", "https://videscentrs.lvgmc.lv/data/weather_forecast_for_location_hourly?punkts=P75");
 	}
 	
+	private static void saveDataToDB() {
+		Source.save();
+		City.save();
+		Scrape.save();
+	}
+	
+	private static void fillAllHistories() {
+		Scrape.fillHistories();
+	}
 	public static int getInt(String input) {
 	    Pattern doublePattern = Pattern.compile("([-+]?\\d+[.]\\d+)");
 	    Matcher matcher = doublePattern.matcher(input);
@@ -61,6 +75,26 @@ public class Main {
 	    return 0;
 	}
 	
+    public static boolean isNumeric(String str) {
+        if (str == null || str.isEmpty()) {
+            return false;
+        }
+        for (char c : str.toCharArray()) {
+            if (!Character.isDigit(c)) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    public static void printArray(String[] array) {
+		for (int i = 0; i < array.length; i++) {
+			System.out.println(i+"> "+array[i]);
+		}
+		System.out.println();
+		
+    }
+
 	public static double roundTo2Decimals(double value) {
 		return Math.round(value * 10.0) / 10.0;
 	}

@@ -11,9 +11,11 @@ import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
+import javax.swing.table.DefaultTableModel;
 
 import main.Main;
 import scraping.City;
@@ -39,6 +41,14 @@ public class GUI implements ActionListener {
 	static JLabel avgWindInfo;
 	static JLabel avgHumidityInfo;
 	
+	static JLabel historyInfo;
+	
+	static JTable siteTable;
+	static JScrollPane siteTableSPane;
+	
+	static JScrollPane historyTableSPane;
+	static JTable historyTable;
+	
 	static GUI listener = new GUI();
 	
 	static Font sumInfoFont = new Font(null, Font.PLAIN, 32);
@@ -49,13 +59,15 @@ public class GUI implements ActionListener {
 //	static int screenHeight = (int) screenSize.getHeight();
 	
 	static int WIDTH = 500;
-	static int HEIGHT = 365;
+	static int HEIGHT = 335;
 	static int mainLeftAlign = 18;
 	static Rectangle sourceComboBoxRec = new Rectangle(mainLeftAlign,15,450,25);
 	static Rectangle cityComboBoxRec = new Rectangle(mainLeftAlign,45,450,25);
 	
 	static Rectangle mainFrameRec = new Rectangle(0, 0, WIDTH, HEIGHT);
 	static Rectangle mainTabPaneRec = new Rectangle(mainLeftAlign, 75, 450, 215);
+	
+	static String[] tableColumns = ("M-DD,Time,Temp,Feels,Direction,Speed,Humidity").split(",");
 	
 	static boolean isVisualDebug = true; 
 	// PINK ones are dynamic, GREY ones ain't
@@ -115,21 +127,79 @@ public class GUI implements ActionListener {
 	private static void addTabsToMainPane() {
 		mainTabbedPane.addTab("Site data", createSitePanel());
 		mainTabbedPane.addTab("Summary", createSummaryPanel());
-		mainTabbedPane.addTab("History", new JPanel());
+		mainTabbedPane.addTab("History", createHistoryPanel());
+	}
+	
+	private static JPanel createHistoryPanel() {
+		JPanel panel = new JPanel();
+		historyInfo = createLbl("RECORDED AVERAGE VALUES FOR ", true, 10, 5, 425, 20, panel, null);
+		String[][] _temp = {{"1","1","1","1","1","1","1"}};
+		historyTable = new JTable(new DefaultTableModel(_temp, tableColumns));
+		historyTable.setBounds(10, 30, 300, 50);
+		panel.add(historyTable);
+        historyTableSPane = new JScrollPane(historyTable);
+        historyTableSPane.setBounds(10, 30, 300, 50);
+        panel.add(historyTableSPane);
+        historyTableSPane.setVisible(false);
+        historyTable.setAutoCreateRowSorter(true);
+		return panel;
 	}
 	
 	private static JPanel createSitePanel() {
+
 		JPanel panel = new JPanel();
 		panel.setLayout(null);
 		createSiteLbls(panel);
 
 		//adding table
-		JTable table = new JTable();
-		table.setBounds(170, 10, 265, 170);
-		panel.add(table);
-		
+		String[][] _temp = {{"1","1","1","1","1","1","1"}};
+		siteTable = new JTable(new DefaultTableModel(_temp, tableColumns));
+		siteTable.setBounds(170, 10, 265, 170);
+		panel.add(siteTable);
+        siteTableSPane = new JScrollPane(siteTable);
+        siteTableSPane.setBounds(170, 10, 265, 170);
+        panel.add(siteTableSPane);
+        siteTableSPane.setVisible(false);
+        siteTable.setAutoCreateRowSorter(true);
 		return panel;
 	}
+	
+	private static JPanel createSummaryPanel() {
+		JPanel panel = new JPanel();
+		panel.setLayout(null);
+		createSummaryLbls(panel);
+		return panel;
+	}
+	
+	private static void updateTables(Source source, City city) {
+		System.out.println("BZIA}DS{JFSDJFNADNVDSFKNFMAL:FRGNEVJDSCMVNFBSFKNVD");
+		updateSiteTable(source, city);
+		updateHistoryTable(city);
+	}
+	
+	private static void updateSiteTable(Source source, City city) {
+		siteTableSPane.setVisible(true);
+		DefaultTableModel model = (DefaultTableModel) siteTable.getModel();
+		model.setRowCount(0);
+		String sourceName = source.getName();
+		String cityName = city.getName();
+		String[][] newData = Main.db.getSavedHistory(sourceName, cityName);
+		for (String[] row : newData) {
+		    model.addRow(row);
+		}
+	}
+
+	private static void updateHistoryTable(City city) {
+		historyTableSPane.setVisible(true);
+		DefaultTableModel model = (DefaultTableModel) historyTable.getModel();
+		model.setRowCount(0);
+		String cityName = city.getName();
+		String[][] newData = Main.db.getSavedHistory(null, cityName);
+		for (String[] row : newData) {
+		    model.addRow(row);
+		}
+	}
+		
 	
 	private static void createSiteLbls(JPanel panel) {
 		int leftPadding = 10;
@@ -144,12 +214,7 @@ public class GUI implements ActionListener {
 		humidityInfo = createLbl("...",true, 	leftPadding+120, 160, 30, 20, panel, siteInfoFont);
 	}
 	
-	private static JPanel createSummaryPanel() {
-		JPanel panel = new JPanel();
-		panel.setLayout(null);
-		createSummaryLbls(panel);
-		return panel;
-	}
+
 	
 	private static void createSummaryLbls(JPanel panel) {
 		avgMainInfo = createLbl("AVERAGE WEATHER DATA FOR ...", true, 10, 5, 425, 20, panel, null);
@@ -219,12 +284,15 @@ public class GUI implements ActionListener {
 		feelsLikeInfo.setText	(Main.getFormatTemp(data.getFeelsLike()));
 		windInfo.setText		(Main.getFormatWind(data.getWindDir(), data.getWindSpeed()));
 		humidityInfo.setText	(Main.getFormatPercent(data.getHumidity()));
-		
-		avgMainInfo.setText		("Average weather data for "+selectedCity.getName().toUpperCase());
+
+		String cityName = selectedCity.getName().toUpperCase();
+		historyInfo.setText		("Average recorded weather data for "+cityName);
+		avgMainInfo.setText		("Average weather data for "+cityName);
 		avgWthrInfo.setText		(Main.getFormatTemp(selectedCity.getAvgCurrentTemp()));
 		avgFeelsLikeInfo.setText(Main.getFormatTemp(selectedCity.getAvgFeelsLike()));
 		avgWindInfo.setText		(Main.getFormatWind(selectedCity.getAvgWindDir(), selectedCity.getAvgWindSpeed()));
 		avgHumidityInfo.setText	(Main.getFormatPercent(selectedCity.getAvgHumidity()));
+		updateTables(selectedSource, selectedCity);
 		refreshMain();
 	}
 	

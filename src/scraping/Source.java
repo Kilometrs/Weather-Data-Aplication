@@ -4,13 +4,12 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.Arrays;
 
 import org.json.JSONArray;
 import org.jsoup.nodes.Document;
 
+import main.DB;
 import main.Main;
 
 
@@ -21,10 +20,11 @@ public class Source {
 
 	public static ArrayList<Source> all = new ArrayList<Source>();
 	static boolean isDebugging = true;
+	private static String[] abrs = {"N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"};
 	
 	public static Source create(String name, String cityName, int currentTemp,
 								int feelsLike, String windDir, double windSpeed, int humidity) {
-		System.out.println(name+";"+cityName+";"+currentTemp+";"+feelsLike+";"+windDir+";"+windSpeed+";"+humidity+";");
+		if (isDebugging) System.out.println(name+";"+cityName+";"+currentTemp+";"+feelsLike+";"+windDir+";"+windSpeed+";"+humidity+";");
 		Source source = getByName(name);
 		if (source == null) source = new Source(name);
 		City city = City.getByName(cityName);
@@ -39,6 +39,14 @@ public class Source {
 		this.name = name;
 		Source.all.add(this);
 		if (isDebugging) System.out.println("<DEBUG> Created new Source called "+this.name);
+	}
+	
+	public static void save() {
+		DB db = Main.db;
+		for (Source s : all) {
+			String query = "INSERT IGNORE INTO `sources` (name) VALUES ('"+s.getName()+"');";
+			db.insert(query);
+		}
 	}
 	
 	public String getName() {
@@ -68,15 +76,14 @@ public class Source {
 		Document html = WebReader.getPage(url);
 		if (html == null) return null;
 		String tempString = html.getElementsByClass("display-temp").text();
-		System.out.println(tempString);
-		System.out.println(Main.getInt(tempString));
 		int currTmp = Main.getInt(html.getElementsByClass("display-temp").text());
 		String[] lineSplit = html.getElementsByClass("detail-item spaced-content").text().split(" ");
-		int feelsLike = Main.getInt(lineSplit[2]);
-		String windDir = lineSplit[12];
-		double wind = getAsMPS(lineSplit[13]);
-		int humidity = Main.getInt(lineSplit[20]);
-
+//		Main.printArray(lineSplit);
+		// for some reason they decided to change HTML in the middle of the evening? HELP ME GOD
+		int feelsLike = !Main.isNumeric(lineSplit[2]) 	? Main.getInt(lineSplit[1]) 	: Main.getInt(lineSplit[2]);
+		String windDir = isCardinalDir(lineSplit[12]) 	? lineSplit[12] 				: "N/A";
+		double wind = !Main.isNumeric(lineSplit[13]) 	? getAsMPS(lineSplit[8]) 		: getAsMPS(lineSplit[13]);
+		int humidity = !Main.isNumeric(lineSplit[20]) 	? Main.getInt(lineSplit[11]) 	: Main.getInt(lineSplit[20]);
 		return create("AccuWeather", city, currTmp, feelsLike, windDir, wind, humidity);
 	}
 
@@ -122,9 +129,12 @@ public class Source {
 
 	private static String getCardinalDirAbr(double deg) {
 		if (isDebugging) System.out.println("<DEBUG> Degrees: "+deg);
-		String[] abrs = {"N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"};
 		int res = (int) Math.floor((deg / 22.5) + 0.5);
 		return abrs[res%16];
+	}
+	
+	private static boolean isCardinalDir(String value) {
+		return new ArrayList<String>(Arrays.asList(abrs)).contains(value);
 	}
 	
 	private static String getCrntLvTime() {

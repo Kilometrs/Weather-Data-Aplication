@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import main.DB;
 import main.Main;
 
 public class City {
@@ -16,6 +17,7 @@ public class City {
 	private String avgWindDir;
 	private double avgWindSpeed;
 	private int avgHumidity;
+	private String[][] history;
 	
 	static private ArrayList<City> all = new ArrayList<City>();
 	
@@ -38,6 +40,26 @@ public class City {
 	public void addScrape(Scrape scrape) {
 		this.scrapes.add(scrape);
 	}
+	
+	public static void save() {
+		DB db = Main.db;
+		for (City c : all) {
+			String cityName = c.getName();
+			String query = "INSERT IGNORE INTO `cities` (name) VALUES ('"+cityName+"');"
+						 + "INSERT INTO `data` (source_fk, city_fk, type, time, temperature, "
+						 + "feels_like, wind_direction, wind_speed, humidity)"
+						 + "VALUES (null, (SELECT id FROM `cities` WHERE name = '"+cityName+"'),"
+						 		+ "1, NOW(), "+c.getAvgCurrentTemp()+", "+c.getAvgFeelsLike()+", '"+c.getAvgWindDir()+"',"
+						 		+ ""+c.getAvgWindSpeed()+", "+c.getAvgHumidity()+");";
+			db.insert(query);
+		}
+	}
+	
+//	public static void fillCityHistories() {
+//		for (City city : all) {
+//			city.history = Main.db.getSavedData(city.get, null)
+//		}
+//	}
 	
 	public static void calculateAverageValues() {
 		for (City c : City.all) {

@@ -24,7 +24,7 @@ public class Person {
 	}
 	
 	static void save() {
-		DB db = new DB();
+		DBd db = new DBd();
 		int i = 0;
 		for (Person p : Person.all) {
 			i++;
