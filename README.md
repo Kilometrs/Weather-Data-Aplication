@@ -1,10 +1,17 @@
+https://github.com/Kilometrs/Weather-Data-Aplication
+
 # Weather Data Aplication
 ## Description
 Weather Data Aplication is a Java based application, that retrieves latest weather infromation about different locations from different weather forecast services. This information is then shown in the UI for better accessibility. Retrieved data is also saved to a database and can be accessed in the same UI to have an overlook of data retrieved before for comparing.
 
 ## Usage
 1. Have a network connection;
-2. Run the app.
+2. Run the app in main.Main;
+
+## Features
+- User interface;
+- Uses real time data;
+- Has a fail safe;
 
 ## Data sources
 Application does not use any local sources (aside database hosted locally while developing).
