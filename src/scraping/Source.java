@@ -19,7 +19,7 @@ public class Source {
 	ArrayList<City> cities = new ArrayList<City>();
 
 	public static ArrayList<Source> all = new ArrayList<Source>();
-	static boolean isDebugging = true;
+	static boolean isDebugging = false;
 	private static String[] abrs = {"N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"};
 	
 	public static Source create(String name, String cityName, int currentTemp,
@@ -49,14 +49,19 @@ public class Source {
 		}
 	}
 	
+	public static ArrayList<Source> getAll(){
+		return all;
+	}
+	
+	public static int getAllObjectCount() {
+		return all.size();
+	}
+	
 	public String getName() {
 		return this.name;
 	}
 	
 	private static Source getByName(String name) {
-//		System.out.println(Source.all.stream()
-//							.filter(source -> source.name.equalsIgnoreCase(name))
-//							.toList());
 		return Source.all.stream()
 							.filter(source -> source.name.equalsIgnoreCase(name))
 							.findFirst()
@@ -80,10 +85,14 @@ public class Source {
 		String[] lineSplit = html.getElementsByClass("detail-item spaced-content").text().split(" ");
 //		Main.printArray(lineSplit);
 		// for some reason they decided to change HTML in the middle of the evening? HELP ME GOD
-		int feelsLike = !Main.isNumeric(lineSplit[2]) 	? Main.getInt(lineSplit[1]) 	: Main.getInt(lineSplit[2]);
-		String windDir = isCardinalDir(lineSplit[12]) 	? lineSplit[12] 				: "N/A";
-		double wind = !Main.isNumeric(lineSplit[13]) 	? getAsMPS(lineSplit[8]) 		: getAsMPS(lineSplit[13]);
-		int humidity = !Main.isNumeric(lineSplit[20]) 	? Main.getInt(lineSplit[11]) 	: Main.getInt(lineSplit[20]);
+		int feelsLike = !Main.isNumeric(lineSplit[2].replace("°", "")) 	? 
+						Main.getInt(lineSplit[1]) 	: Main.getInt(lineSplit[2]);
+		String windDir = isCardinalDir(lineSplit[12]) 	? 
+						lineSplit[12] 				: "N/A";
+		double wind = !Main.isNumeric(lineSplit[13]) 	? 
+						getAsMPS(lineSplit[8]) 		: getAsMPS(lineSplit[13]);
+		int humidity = !Main.isNumeric(lineSplit[20].replace("%", "")) 	? 
+						Main.getInt(lineSplit[11]) 	: Main.getInt(lineSplit[20]);
 		return create("AccuWeather", city, currTmp, feelsLike, windDir, wind, humidity);
 	}
 

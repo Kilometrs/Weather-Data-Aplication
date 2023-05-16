@@ -15,7 +15,7 @@ public class Scrape {
 	private int humidity;
 	private String[][] history;
 	
-	static boolean isDebugging = true;
+	static boolean isDebugging = false;
 	static ArrayList<Scrape> all = new ArrayList<Scrape>();
 	
 	public Scrape(Source source, City city, int currentTemp,
@@ -35,15 +35,23 @@ public class Scrape {
 	public static void save() {
 		DB db = Main.db;
 		for (Scrape s : all) {
-			String query = "INSERT INTO `data` (source_fk, city_fk, type, time, temperature, "
+			String query = "INSERT INTO `data` (source_fk, city_fk, time, temperature, "
 						 + "feels_like, wind_direction, wind_speed, humidity)"
 						 + "VALUES"
 						 + " ((SELECT id FROM `sources` WHERE name = '"+s.source.getName()+"'),"
 						 + " (SELECT id FROM `cities` WHERE name = '"+s.city.getName()+"'),"
-						 + "2, NOW(), "+s.getCrntTemp()+", "+s.getFeelsLike()+", '"+s.getWindDir()+"',"
+						 + "NOW(), "+s.getCrntTemp()+", "+s.getFeelsLike()+", '"+s.getWindDir()+"',"
 						 + ""+s.getWindSpeed()+", "+s.getHumidity()+");";
 			db.insert(query);
 		}
+	}
+	
+	public static ArrayList<Scrape> getAll(){
+		return all;
+	}
+	
+	public static int getAllObjectCount() {
+		return all.size();
 	}
 	
 	public static void fillHistories() {

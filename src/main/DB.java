@@ -13,15 +13,22 @@ public class DB {
 	private ResultSet rs;
 	private String db = "java";
 	
+	private static boolean isConnected = false;
 	public DB() {
 		try {
 			String params = "?useSSL=false&autoReconnect=true&allowMultiQueries=true";
 			this.con = DriverManager.getConnection("jdbc:mysql://localhost:3306/"+db+params, "root", "");
 			this.stmt = con.createStatement();
+			isConnected = true;
 		} catch (Exception e) {
 			System.err.println("Problems creating DB connection");
+			isConnected = false;
 			e.printStackTrace();
 		}
+	}
+	
+	public static boolean isConnected() {
+		return isConnected;
 	}
 	
 	

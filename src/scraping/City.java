@@ -41,15 +41,23 @@ public class City {
 		this.scrapes.add(scrape);
 	}
 	
+	public static ArrayList<City> getAll(){
+		return all;
+	}
+	
+	public static int getAllObjectCount() {
+		return all.size();
+	}
+	
 	public static void save() {
 		DB db = Main.db;
 		for (City c : all) {
 			String cityName = c.getName();
-			String query = "INSERT IGNORE INTO `cities` (name) VALUES ('"+cityName+"');"
-						 + "INSERT INTO `data` (source_fk, city_fk, type, time, temperature, "
+			String query = "INSERT IGNORE INTO `cities` (name) VALUES ('"+cityName+"'); "
+						 + "INSERT INTO `data` (source_fk, city_fk, time, temperature, "
 						 + "feels_like, wind_direction, wind_speed, humidity)"
 						 + "VALUES (null, (SELECT id FROM `cities` WHERE name = '"+cityName+"'),"
-						 		+ "1, NOW(), "+c.getAvgCurrentTemp()+", "+c.getAvgFeelsLike()+", '"+c.getAvgWindDir()+"',"
+						 		+ "NOW(), "+c.getAvgCurrentTemp()+", "+c.getAvgFeelsLike()+", '"+c.getAvgWindDir()+"',"
 						 		+ ""+c.getAvgWindSpeed()+", "+c.getAvgHumidity()+");";
 			db.insert(query);
 		}
@@ -63,8 +71,6 @@ public class City {
 	
 	public static void calculateAverageValues() {
 		for (City c : City.all) {
-			System.out.println(c);
-			System.out.println(c.scrapes);
 			c.avgCurrentTemp = c.getCalculatedAverageTemp();
 			c.avgFeelsLike = c.getCalculatedAverageFeelsLike();
 			c.avgWindDir = c.getCalculatedAverageWindDir();

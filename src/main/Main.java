@@ -9,14 +9,17 @@ import scraping.Scrape;
 import scraping.Source;
 
 public class Main {
-	public static DB db = new DB();
+	public static DB db;
 	static boolean isDebugging = true;
 	public static void main(String[] args) {
-		System.out.println("BINHDS");
+		System.out.println("Started!");
+		GUI.createWaitPopup();
+		Main.connectToDB();
 		Main.createScrapeObjects();
 		City.calculateAverageValues();
-		Main.saveDataToDB();
-		Main.fillAllHistories();
+		if (DB.isConnected()) Main.saveAndRetrieveData();
+		GUI.hidePopup();
+		if (!hasData()) Main.endSession();
 		GUI.createMainFrame();
 		GUI.createMainComboBoxes();
 		GUI.createTabbedPane();
@@ -38,6 +41,26 @@ public class Main {
 		Source.getAccuScrape("Daugavpils", "https://www.accuweather.com/en/lv/daugavpils/227465/current-weather/227465");
 		Source.getGisMeteoScrape("Daugavpils", "https://www.gismeteo.lv/weather-daugavpils-4177/now/");
 		Source.getLVGMCScrape("Daugavpils", "https://videscentrs.lvgmc.lv/data/weather_forecast_for_location_hourly?punkts=P75");
+	}
+	
+	private static void endSession() {
+		GUI.createErrorPopup();
+		System.exit(0);
+	}
+	
+	private static void saveAndRetrieveData() {
+		Main.saveDataToDB();
+		Main.fillAllHistories();
+	}
+	
+	private static void connectToDB() {
+		db = new DB();
+	}
+	
+	private static boolean hasData() {
+		return Source.getAllObjectCount() != 0 && 
+			   Scrape.getAllObjectCount() != 0 &&
+			   City.getAllObjectCount()   != 0;
 	}
 	
 	private static void saveDataToDB() {
